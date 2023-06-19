@@ -19,7 +19,7 @@ public class ShoppingApp extends JFrame {
     private JButton checkoutButton; // Button to initiate the checkout process
     private JLabel totalLabel; // Label to display the total price
 
-    private Map<String, Double> allProducts; // Map to store all the products and their prices
+    private Map<String, Product> allProducts; // Map to store all the products and their prices
     private List<String> displayedProducts; // List to store the products currently displayed
     private Map<String, Double> cartItems; // Map to store the items in the cart and their prices
     private double totalPrice; // Variable to hold the total price of the items in the cart
@@ -130,27 +130,35 @@ public class ShoppingApp extends JFrame {
                 int selectedIndex = productList.getSelectedIndex();
                 if (selectedIndex != -1) {
                     String selectedProduct = displayedProducts.get(selectedIndex);
-                    double price = allProducts.get(selectedProduct);
-                    cartItems.put(selectedProduct, price);
-                    updateCartList();
-                    totalPrice += price;
-                    updateTotalLabel();
+                    Product item = allProducts.get(selectedProduct);
+                    if (item != null && item.getQuantity() > 0) {
+                        double price = item.getPrice();
+                        int quantity = item.getQuantity();
+                        if (quantity > 0) {
+                            cartItems.put(selectedProduct, cartItems.getOrDefault(selectedProduct, 0.0) + 1);
+                            item.setQuantity(quantity - 1); // Deduct the quantity by 1
+                            updateProductList();
+                            updateCartList();
+                            totalPrice += price;
+                            updateTotalLabel();
+                        }
+                    }
                 }
-
-
             }
-        });
+        });        
 
         removeFromCartButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int selectedIndex = cartList.getSelectedIndex();
                 if (selectedIndex != -1) {
-                    String selectedItem = cartListModel.getElementAt(selectedIndex);
-                    double price = cartItems.get(selectedItem);
-                    cartItems.remove(selectedItem);
+                    String selectedItem = cartList.getSelectedValue();
+                    String selectedProduct = selectedItem.substring(0, selectedItem.indexOf(" -"));
+                    double price = allProducts.get(selectedProduct).getPrice();
+                    int quantity = cartItems.get(selectedProduct).intValue(); // Retrieve the quantity
+                    cartItems.remove(selectedProduct);
                     updateCartList();
-                    totalPrice -= price;
+                    totalPrice -= price * quantity; // Subtract the price multiplied by the quantity
                     updateTotalLabel();
                 }
             }
@@ -177,13 +185,13 @@ public class ShoppingApp extends JFrame {
     }
 
     //make stocks available here
-    private Map<String, Double> SampleProducts() {
-        Map<String, Double> products = new HashMap<>();
-        products.put("Processor", 199.99);
-        products.put("Graphics Card", 499.99);
-        products.put("RAM", 99.99);
-        products.put("SSD", 149.99);
-        products.put("Power Supply", 129.99);
+    private Map<String, Product> SampleProducts() {
+        Map<String, Product> products = new HashMap<>();
+        products.put("Processor", new Product(199.99, 10));
+        products.put("Graphics Card", new Product(499.99, 5));
+        products.put("RAM", new Product(99.99, 15));
+        products.put("SSD", new Product(149.99, 8));
+        products.put("Power Supply", new Product(129.99, 12));
         return products;
     }
 
@@ -199,17 +207,26 @@ public class ShoppingApp extends JFrame {
     private void updateProductList() {
         productListModel.clear();
         for (String product : displayedProducts) {
-            double price = allProducts.get(product);
-            productListModel.addElement(product + " - $" + formatPrice(price));
+            Product item = allProducts.get(product);
+            if (item != null) {
+                double itemPrice = item.getPrice();
+                int quantity = item.getQuantity();
+                if (quantity > 0) {
+                    productListModel.addElement(product + " - $" + formatPrice(itemPrice) + " (Quantity: " + quantity + ")");
+                }
+            }
         }
     }
+    
+    
 
     private void updateCartList() {
         cartListModel.clear();
         for (Map.Entry<String, Double> entry : cartItems.entrySet()) {
             String product = entry.getKey();
-            double price = entry.getValue();
-            cartListModel.addElement(product + " - $" + formatPrice(price));
+            int quantity = entry.getValue().intValue(); // Convert double to int
+            double price = allProducts.get(product).getPrice(); // Fetch the price from allProducts map
+            cartListModel.addElement(product + " - $" + formatPrice(price) + " (Quantity: " + quantity + ")");
         }
     }
 
@@ -229,4 +246,26 @@ public class ShoppingApp extends JFrame {
         updateTotalLabel();
     }
 
+    private class Product {
+        private double price;
+        private int quantity;
+
+        public Product(double price, int quantity) {
+            this.price = price;
+            this.quantity = quantity;
+        }
+
+        public void setQuantity(int i) {
+        }
+
+        public double getPrice() {
+            return price;
+        }
+
+        public int getQuantity() {
+            return quantity;
+        }
+    }
 }
+
+
