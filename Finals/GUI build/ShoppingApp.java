@@ -1,0 +1,232 @@
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.List;
+import javax.swing.border.Border;
+
+public class ShoppingApp extends JFrame {
+    private DefaultListModel<String> productListModel; // List model to hold the products
+    private JList<String> productList; // JList to display the products
+    private JTextField searchField; // Text field for search input
+    private DefaultListModel<String> cartListModel; // List model to hold the items in the cart
+    private JList<String> cartList; // JList to display the items in the cart
+    private JButton addToCartButton; // Button to add an item to the cart
+    private JButton removeFromCartButton; // Button to remove an item from the cart
+    private JButton checkoutButton; // Button to initiate the checkout process
+    private JLabel totalLabel; // Label to display the total price
+
+    private Map<String, Double> allProducts; // Map to store all the products and their prices
+    private List<String> displayedProducts; // List to store the products currently displayed
+    private Map<String, Double> cartItems; // Map to store the items in the cart and their prices
+    private double totalPrice; // Variable to hold the total price of the items in the cart
+
+    Border emptyborder = BorderFactory.createEmptyBorder();
+
+
+    public ShoppingApp() {
+        setTitle("Computer Parts Shopping App");
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1200, 800);
+        setLayout(new BorderLayout());
+        setResizable(false);
+        setLocationRelativeTo(null);
+
+        // Initialize product list
+        productListModel = new DefaultListModel<>();
+        productList = new JList<>(productListModel);
+        productList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Initialize cart list
+        cartListModel = new DefaultListModel<>();
+        cartList = new JList<>(cartListModel);
+        cartList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        // Initialize search field
+        searchField = new JTextField(20);
+        searchField.setBackground(Color.black);
+        searchField.setForeground(Color.white);
+
+        // Initialize buttons
+        addToCartButton = new JButton("Add to Cart");
+        addToCartButton.setFocusable(false);
+        addToCartButton.setBackground(Color.darkGray);
+        addToCartButton.setForeground(Color.white);
+        addToCartButton.setBorder(emptyborder);
+
+
+        removeFromCartButton = new JButton("Remove from Cart");
+        removeFromCartButton.setFocusable(false);
+        removeFromCartButton.setBackground(Color.darkGray);
+        removeFromCartButton.setForeground(Color.white);
+        removeFromCartButton.setBorder(emptyborder);
+
+
+        checkoutButton = new JButton("Checkout");
+        checkoutButton.setFocusable(false);
+        checkoutButton.setBackground(Color.darkGray);
+        checkoutButton.setForeground(Color.white);
+        checkoutButton.setBorder(emptyborder);
+
+
+
+
+        // Initialize total label
+        totalLabel = new JLabel("Total: $0.00");
+        totalLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        totalLabel.setForeground(Color.white);
+
+        // Generate sample product data
+        allProducts = SampleProducts();
+        displayedProducts = new ArrayList<>(allProducts.keySet());
+
+        // Initialize cart items
+        cartItems = new HashMap<>();
+
+        // Populate product list
+        updateProductList();
+
+        // Layout setup
+        JPanel topPanel = new JPanel();
+        topPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        topPanel.add(new JLabel("Search:"));
+        topPanel.setBackground(Color.black);// top panel color
+        topPanel.setForeground(Color.white);
+        searchField.setFont(new Font("helvetica", Font.BOLD, 12));
+        searchField.setBackground(Color.darkGray);
+        searchField.setForeground(Color.white);
+        searchField.setCaretColor(Color.white);
+        topPanel.add(searchField);
+        add(topPanel, BorderLayout.NORTH);
+
+        JPanel centerPanel = new JPanel(new GridLayout(1, 2));
+        centerPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        centerPanel.setBackground(Color.white);
+        centerPanel.add(new JScrollPane(productList));
+        centerPanel.add(new JScrollPane(cartList));
+        
+        add(centerPanel, BorderLayout.CENTER);
+
+        JPanel bottomPanel = new JPanel(new BorderLayout());
+        bottomPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        bottomPanel.setBackground(Color.black);//bottom panel color
+        buttonPanel.setBackground(Color.black);
+        buttonPanel.add(addToCartButton);
+        buttonPanel.add(removeFromCartButton);
+        bottomPanel.add(buttonPanel, BorderLayout.NORTH);
+        bottomPanel.add(checkoutButton, BorderLayout.CENTER);
+        bottomPanel.add(totalLabel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.SOUTH);
+
+        // Add action listeners
+        // Add an effect that this button also affect the amount of stocks available
+        addToCartButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedIndex = productList.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    String selectedProduct = displayedProducts.get(selectedIndex);
+                    double price = allProducts.get(selectedProduct);
+                    cartItems.put(selectedProduct, price);
+                    updateCartList();
+                    totalPrice += price;
+                    updateTotalLabel();
+                }
+
+
+            }
+        });
+
+        removeFromCartButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedIndex = cartList.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    String selectedItem = cartListModel.getElementAt(selectedIndex);
+                    double price = cartItems.get(selectedItem);
+                    cartItems.remove(selectedItem);
+                    updateCartList();
+                    totalPrice -= price;
+                    updateTotalLabel();
+                }
+            }
+        });
+
+        checkoutButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JOptionPane.showMessageDialog(ShoppingApp.this, "Thank you for your purchase! Your total is $" + formatPrice(totalPrice) + ".");
+                resetCart();
+            }
+        });
+
+        searchField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchQuery = searchField.getText().trim();
+                filterProducts(searchQuery);
+                updateProductList();
+            }
+        });
+
+
+    }
+
+    //make stocks available here
+    private Map<String, Double> SampleProducts() {
+        Map<String, Double> products = new HashMap<>();
+        products.put("Processor", 199.99);
+        products.put("Graphics Card", 499.99);
+        products.put("RAM", 99.99);
+        products.put("SSD", 149.99);
+        products.put("Power Supply", 129.99);
+        return products;
+    }
+
+    private void filterProducts(String searchQuery) {
+        displayedProducts.clear();
+        for (String product : allProducts.keySet()) {
+            if (product.toLowerCase().contains(searchQuery.toLowerCase())) {
+                displayedProducts.add(product);
+            }
+        }
+    }
+
+    private void updateProductList() {
+        productListModel.clear();
+        for (String product : displayedProducts) {
+            double price = allProducts.get(product);
+            productListModel.addElement(product + " - $" + formatPrice(price));
+        }
+    }
+
+    private void updateCartList() {
+        cartListModel.clear();
+        for (Map.Entry<String, Double> entry : cartItems.entrySet()) {
+            String product = entry.getKey();
+            double price = entry.getValue();
+            cartListModel.addElement(product + " - $" + formatPrice(price));
+        }
+    }
+
+    private void updateTotalLabel() {
+        totalLabel.setText("Total: $" + formatPrice(totalPrice));
+    }
+
+    private String formatPrice(double price) {
+        DecimalFormat decimalFormat = new DecimalFormat("0.00");
+        return decimalFormat.format(price);
+    }
+
+    private void resetCart() {
+        cartListModel.clear();
+        cartItems.clear();
+        totalPrice = 0.0;
+        updateTotalLabel();
+    }
+
+}
