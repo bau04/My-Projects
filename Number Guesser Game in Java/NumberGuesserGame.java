@@ -21,8 +21,8 @@ public class App {
 
     if(r == n) {
         System.out.println("Your guess is correct!");
-        System.out.println("Your answer: " + n)
-        System.out.println("Correct Answer: " + r)
+        System.out.println("Your answer: " + n);
+        System.out.println("Correct Answer: " + r);
     }
 
     else if(n < 1) {
