@@ -27,11 +27,11 @@ public class Main {
             System.out.println("Result: You Won!!!");
         }
 
-        if (n1 <= -1 && n2 <= -1){
+        if (n1 <= -1 || n2 <= -1){
             System.out.println("Error: The number you entered is below the range");
         }
 
-        if (n1 >= 10 && n2 >= 10){
+        if (n1 >= 10 || n2 >= 10){
             System.out.println("Error: The number you entered is above the range");
         }
 
