@@ -46,15 +46,15 @@ public class Main {
             System.out.println("        Result: You Won!!!");
         }
 
-        if (n1 <= -1 || n2 <= -1 || n3 <= -1 || n4 <= -1 || n5 <= -1 || n6 <= -1){
+        else if (n1 <= -1 || n2 <= -1 || n3 <= -1 || n4 <= -1 || n5 <= -1 || n6 <= -1){
             System.out.println("Error: The number you entered is below the range");
         }
 
-        if (n1 >= 10 || n2 >= 10 || n3 >= 10 || n4 >= 10 || n5 >= 10 || n6 >= 10){
+        else if (n1 >= 10 || n2 >= 10 || n3 >= 10 || n4 >= 10 || n5 >= 10 || n6 >= 10){
             System.out.println("Error: The number you entered is above the range");
         }
 
-        if (n1 != x1 && n2 != x2 && n3 != x3 && n4 != x4 && n5 != x5 && n6 != x6){
+        else if (n1 != x1 && n2 != x2 && n3 != x3 && n4 != x4 && n5 != x5 && n6 != x6){
             System.out.println("\nToday's lottery result is: ");
             System.out.println(W);
             System.out.println(P);
