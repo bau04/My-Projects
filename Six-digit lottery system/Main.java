@@ -54,13 +54,6 @@ public class Main {
             System.out.println("Error: The number you entered is above the range");
         }
 
-        else if (n1 != x1 && n2 != x2 && n3 != x3 && n4 != x4 && n5 != x5 && n6 != x6){
-            System.out.println("\nToday's lottery result is: ");
-            System.out.println(W);
-            System.out.println(P);
-            System.out.println("        Result: You lost!");
-        }
-
         else {
             System.out.println("\nToday's lottery result is: ");
             System.out.println(W);
